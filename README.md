@@ -1,17 +1,15 @@
 Huawei E303 USB Modem in NixOS
 ==============================
 
-First of all. A question: What's the Problem?
-
 Huawei E303 USB Modem has official support for Linux. But we can't enjoy this
 first class support in NixOS (yet), since the installer included in the
 read-only memory storage of the modem isn't working as flawlessly as in other
 Linux distro.
 
-So, in order to handle this unconvenience, we will go through hardship of
+So, in order to handle this uncovenience, we will go through hardship of
 finding the solution path. A bit long, since it'll mnention the process of how
-we able to coming to an answer in the step of the solution. But hopefully, it'll
-become a good learning source.
+we able to coming to an answer in each step. But hopefully, it'll become a good
+learning source.
 
 Now, let's get to the game.
 
@@ -36,15 +34,16 @@ execute the command below.
     [ 1913.078225] sr1: scsi-1 drive
     [ 1913.078676] sr 8:0:0:0: Attached scsi CD-ROM sr1
 
-Looks, it's detected and the last two line said that a scsi CD-ROM was attached for our
-usbmodem storage. I'll copy and paste that part below for clarity.
+Looks! it's been detected and the last two line said that a scsi CD-ROM was
+attached for our usbmodem storage. I'll copy and paste that part below for
+clarity.
 
     [ 1913.078225] sr1: scsi-1 drive
     [ 1913.078676] sr 8:0:0:0: Attached scsi CD-ROM sr1
 
 It's gives us a clue about where did the device file created under our /dev/ directory.
-For those who still unclear, it's in `/dev/sr1`. Let's create a new directory
-for the mount point and then mount the device to that directory.
+For those who still unclear, it's in `/dev/sr1`, my buddy. Let's create a new directory
+for mounting it, we will name it `usbmodem`.
 
     $ mkdir usbmodem
     $ sudo mount /dev/sr1 usbmodem
@@ -64,22 +63,23 @@ Great! Let's see what's inside.
     dr-xr-xr-x 1 root root   2048 Sep 27  2011 MobileBrServ/
     -r-xr-xr-x 1 root root 439926 Nov 26  2010 Startup.ico*
 
-We using -l for long listing format, and -F for clarity about which one is a
+We using `-l` for long listing format, and `-F` for clarity about which one is a
 normal file, executable, folder, or link by showing an extra character at the
 end of the file name.  `*` means an executable, and `/` means directory. Though
 you can always see that from the file's mode.
 
-A Side track.
+### Extra
 
-Let's back up this storage, and put it somewhere online so that next time we could
-have access to it. Maybe for a preparation for an nix configuration script. Hence
-we could refer it by this backup without needing the actual devices.
-
-Below, I've tried a few compression strategy for our files.
+Let's back up this storage, and put it somewhere online so that for the next
+time we don't need to go through that step again. For this purpose, We must
+choose a best compression strategy so that we could safe ourselves a few
+megabytes for our archieve aboves.  Below, I've tried a few.
 
     $ for ext in gz xz bz2; do tar -caf usbmodem.tar.$ext usbmodem; done
 
-Now, let's compare the size.
+Using `-c` flag for archieve creation, `-a` flag so that it'll automatically
+guess the compression strategy by using the file's extension, and `-f` for
+mention of the archieve's name. Now, let's compare the size.
 
     $ du -s usbmodem*
     4636    usbmodem
@@ -87,12 +87,24 @@ Now, let's compare the size.
     3540    usbmodem.tar.gz
     3156    usbmodem.tar.xz
 
-We use -s (--summarize) options of du (disk usage), so it won't report the size
-of all other files inside the usbmodem directory. Anyway, from the data above,
-we can see that usbmodem.tar.xz is the champion. We able to save about 1.48M
-disk space (4636 - 3156 = 1480). Delete the others archive and upload
-usbmodem.tar.xz somewhere.
+The size above are in KB. We use `-s` (`--summarize`) options of du (disk
+usage), so it won't recursively traverse the files inside the usbmodem
+directory. Anyway, from the data above, we can see that usbmodem.tar.xz is the
+winner. We able to save about 1.48M disk space (4636 - 3156 = 1480) for our
+archieve. Now, delete the other archives and upload usbmodem.tar.xz somewhere.
 
     $ rm usbmodem.tar.{bz2,gz}
+    $ # upload usbmodem.tar.xz somewhere
 
-vim:sw=2:ts=2:et:ai:bs=indent,eol,start:
+I've uploaded the archieve in [this repo release page][release], hence you
+could just download that files for yourself. For now, we are going to go to the
+part two of our journey.  I'll stop the intro here and pointing you out to
+[1-examining.md](1-examining.md). 
+
+Happy Hacking!
+
+[release]: https://github.com/matematikaadit/usbmodem.nix/releases/download/v0.0.1/usbmodem.tar.xz
+
+<!--
+vim:sw=4:ts=4:et:ai:bs=indent,eol,start:
+-->
